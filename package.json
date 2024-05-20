@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^4.29.12",
     "@ai-sdk/anthropic": "^0.0.7",
     "@ai-sdk/openai": "^0.0.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
