@@ -1,14 +1,9 @@
-import { Chat } from '@/components/chat'
-import { nanoid } from 'ai'
-import { AI } from './actions'
+'use client'
 
-export const maxDuration = 60
+import { Chat } from '@/components/chat'
+
+export const runtime = 'edge'
 
 export default function Page() {
-  const id = nanoid()
-  return (
-    <AI initialAIState={{ chatId: id, messages: [] }}>
-      <Chat id={id} />
-    </AI>
-  )
+  return <Chat />
 }

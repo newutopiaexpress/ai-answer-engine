@@ -3,20 +3,12 @@ import { ArrowRight } from 'lucide-react'
 
 const exampleMessages = [
   {
-    heading: "What's new with the iPad Pro?",
-    message: "What's new with the iPad Pro?"
+    heading: 'Melyik a három legnépszerűbb customer chatbot builder?',
+    message: 'Melyik a három legnépszerűbb customer chatbot builder?'
   },
   {
-    heading: 'Why is Nvidia growing rapidly?',
-    message: 'Why is Nvidia growing rapidly?'
-  },
-  {
-    heading: 'How does the Vercel AI SDK work?',
-    message: 'How does the Vercel AI SDK work?'
-  },
-  {
-    heading: 'Tesla vs Rivian',
-    message: 'Tesla vs Rivian'
+    heading: 'Hasonlítsd össze a Chatbase-t, a Botpress-t',
+    message: 'Hasonlítsd össze a Chatbase-t, a Botpress-t'
   }
 ]
 export function EmptyScreen({
@@ -28,7 +20,7 @@ export function EmptyScreen({
 }) {
   return (
     <div className={`mx-auto w-full transition-all ${className}`}>
-      <div className="bg-background p-2">
+      <div className="bg-transparent p-2">
         <div className="mt-4 flex flex-col items-start space-y-2 mb-4">
           {exampleMessages.map((message, index) => (
             <Button
@@ -40,7 +32,7 @@ export function EmptyScreen({
                 submitMessage(message.message)
               }}
             >
-              <ArrowRight size={16} className="mr-2 text-muted-foreground" />
+              <ArrowRightIcon/>
               {message.heading}
             </Button>
           ))}
@@ -49,3 +41,14 @@ export function EmptyScreen({
     </div>
   )
 }
+
+
+function ArrowRightIcon() {
+  return (
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="mr-2 text-muted-foreground w-4 h-4 opacity-50">
+  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 19.5 15-15m0 0H8.25m11.25 0v11.25" />
+</svg>
+  )
+}
+
+

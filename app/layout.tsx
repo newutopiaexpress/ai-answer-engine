@@ -1,24 +1,23 @@
-import type { Metadata, Viewport } from 'next'
-import { Inter as FontSans } from 'next/font/google'
-import './globals.css'
-import { cn } from '@/lib/utils'
-import { ThemeProvider } from '@/components/theme-provider'
-import Header from '@/components/header'
-import Footer from '@/components/footer'
-import { Sidebar } from '@/components/sidebar'
-import { Toaster } from '@/components/ui/sonner'
+import type { Metadata, Viewport } from 'next';
+import { AI } from './action';
+import './globals.css';
+import { cn } from '@/lib/utils';
+import { ThemeProvider } from '@/components/theme-provider';
+import Header from '@/components/header';
+import Footer from '@/components/footer';
+import { Inter as FontSans } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const fontSans = FontSans({
-  subsets: ['latin'],
-  variable: '--font-sans'
+  subsets: ["latin"],
+  variable: "--font-sans",
 })
 
-const title = 'Morphic'
+const title = 'Utopia Web Research'
 const description =
-  'A fully open-source AI-powered answer engine with a generative UI.'
+  'AI-powered web research engine.'
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://morphic.sh'),
   title,
   description,
   openGraph: {
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
     title,
     description,
     card: 'summary_large_image',
-    creator: '@miiura'
+    creator: 'Utopia Expreess'
   }
 }
 
@@ -46,8 +45,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
+    <ClerkProvider>
     <html lang="en" suppressHydrationWarning>
-      <body className={cn('font-sans antialiased', fontSans.variable)}>
+      <body 
+              className={cn(
+                "scroll-smooth min-h-screen bg-background font-sans antialiased bg-gradient-to-tl from-fuchsia-50 to-slate-300 dark:bg-gradient-to-tl dark:from-fuchsia-50 dark:to-slate-300",
+                fontSans.variable
+              )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -55,12 +60,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Header />
-          {children}
-          <Sidebar />
+          <AI>{children}</AI>
           <Footer />
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>
+    </ClerkProvider>
   )
 }

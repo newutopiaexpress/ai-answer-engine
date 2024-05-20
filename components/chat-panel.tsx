@@ -1,30 +1,21 @@
-'use client'
-
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import type { AI, UIState } from '@/app/actions'
-import { useUIState, useActions } from 'ai/rsc'
+import type { AI } from '@/app/action'
+import { useUIState, useActions, useAIState } from 'ai/rsc'
 import { cn } from '@/lib/utils'
 import { UserMessage } from './user-message'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { ArrowRight, Plus } from 'lucide-react'
+import { ArrowRight, Plus, Square } from 'lucide-react'
 import { EmptyScreen } from './empty-screen'
-import Textarea from 'react-textarea-autosize'
-import { nanoid } from 'ai'
 
-interface ChatPanelProps {
-  messages: UIState
-}
-
-export function ChatPanel({ messages }: ChatPanelProps) {
+export function ChatPanel() {
   const [input, setInput] = useState('')
-  const [, setMessages] = useUIState<typeof AI>()
-  const { submit } = useActions()
+  const [messages, setMessages] = useUIState<typeof AI>()
+  const [aiMessages, setAiMessages] = useAIState<typeof AI>()
+  const { submit } = useActions<typeof AI>()
   const [isButtonPressed, setIsButtonPressed] = useState(false)
-  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [showEmptyScreen, setShowEmptyScreen] = useState(false)
-  const router = useRouter()
   // Focus on input when button is pressed
   useEffect(() => {
     if (isButtonPressed) {
@@ -46,7 +37,8 @@ export function ChatPanel({ messages }: ChatPanelProps) {
     setMessages(currentMessages => [
       ...currentMessages,
       {
-        id: nanoid(),
+        id: Date.now(),
+        isGenerating: false,
         component: <UserMessage message={input} />
       }
     ])
@@ -55,11 +47,15 @@ export function ChatPanel({ messages }: ChatPanelProps) {
     const formData = new FormData(e.currentTarget)
     const responseMessage = await submit(formData)
     setMessages(currentMessages => [...currentMessages, responseMessage as any])
+
+    setInput('')
   }
 
   // Clear messages
   const handleClear = () => {
-    router.push('/')
+    setIsButtonPressed(true)
+    setMessages([])
+    setAiMessages([])
   }
 
   useEffect(() => {
@@ -70,11 +66,11 @@ export function ChatPanel({ messages }: ChatPanelProps) {
   // If there are messages and the new button has not been pressed, display the new Button
   if (messages.length > 0 && !isButtonPressed) {
     return (
-      <div className="fixed bottom-2 md:bottom-8 left-0 right-0 flex justify-center items-center mx-auto pointer-events-none">
+      <div className="fixed bottom-2 md:bottom-8 left-0 right-0 flex justify-center items-center mx-auto">
         <Button
           type="button"
           variant={'secondary'}
-          className="rounded-full bg-secondary/80 group transition-all hover:scale-105 pointer-events-auto"
+          className="rounded-full bg-secondary/80 group transition-all hover:scale-105"
           onClick={() => handleClear()}
         >
           <span className="text-sm mr-2 group-hover:block hidden animate-in fade-in duration-300">
@@ -86,57 +82,26 @@ export function ChatPanel({ messages }: ChatPanelProps) {
     )
   }
 
+  // Condition 1 and 3: If there are no messages or the button is pressed, display the form
+  const formPositionClass =
+    messages.length === 0
+      ? 'fixed bottom-8 left-0 right-0 top-10 mx-auto h-screen flex flex-col items-center justify-center'
+      : 'fixed bottom-8-ml-6'
   return (
-    <div
-      className={
-        'fixed bottom-8 left-0 right-0 top-10 mx-auto h-screen flex flex-col items-center justify-center'
-      }
-    >
+    <div className={formPositionClass}>
+      {/* <IconKuroko className="w-6 h-6 mb-4" /> */}
       <form onSubmit={handleSubmit} className="max-w-2xl w-full px-6">
         <div className="relative flex items-center w-full">
-          <Textarea
+          <Input
             ref={inputRef}
+            type="text"
             name="input"
-            rows={1}
-            maxRows={5}
-            tabIndex={0}
-            placeholder="Ask a question..."
-            spellCheck={false}
+            placeholder="Ask something"
             value={input}
-            className="resize-none w-full min-h-12 rounded-fill bg-muted border border-input pl-4 pr-10 pt-3 pb-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'"
+            className="focus:ring-0 outline-none focus:outline-none transition-all pl-4 pr-10 h-14 rounded-full bg-muted shadow-2xl shadow-slate-600/10 hover:shadow-fuchsia-900/10 hover:shadow-xl"
             onChange={e => {
               setInput(e.target.value)
               setShowEmptyScreen(e.target.value.length === 0)
-            }}
-            onKeyDown={e => {
-              // Enter should submit the form
-              if (
-                e.key === 'Enter' &&
-                !e.shiftKey &&
-                !e.nativeEvent.isComposing
-              ) {
-                // Prevent the default action to avoid adding a new line
-                e.preventDefault()
-                const textarea = e.target as HTMLTextAreaElement
-                textarea.form?.requestSubmit()
-              }
-            }}
-            onHeightChange={height => {
-              // Ensure inputRef.current is defined
-              if (!inputRef.current) return
-
-              // The initial height and left padding is 70px and 2rem
-              const initialHeight = 70
-              // The initial border radius is 32px
-              const initialBorder = 32
-              // The height is incremented by multiples of 20px
-              const multiple = (height - initialHeight) / 20
-
-              // Decrease the border radius by 4px for each 20px height increase
-              const newBorder = initialBorder - 4 * multiple
-              // The lowest border radius will be 8px
-              inputRef.current.style.borderRadius =
-                Math.max(8, newBorder) + 'px'
             }}
             onFocus={() => setShowEmptyScreen(true)}
             onBlur={() => setShowEmptyScreen(false)}
@@ -144,20 +109,32 @@ export function ChatPanel({ messages }: ChatPanelProps) {
           <Button
             type="submit"
             size={'icon'}
-            variant={'ghost'}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2"
+            variant={'outline'}
+            className="rounded-full absolute right-2 top-1/2 transform -translate-y-1/2"
             disabled={input.length === 0}
           >
-            <ArrowRight size={20} />
+            <SearchIcon/>
           </Button>
         </div>
         <EmptyScreen
           submitMessage={message => {
             setInput(message)
           }}
-          className={cn(showEmptyScreen ? 'visible' : 'invisible')}
+          className={cn(showEmptyScreen ? 'visible' : 'visible')}
         />
       </form>
     </div>
   )
 }
+
+
+function SearchIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-fuchsia-300 hover:text-fuchsia-400">
+      <path fillRule="evenodd" d="M9 4.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.75 3.75 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813A3.75 3.75 0 0 0 7.466 7.89l.813-2.846A.75.75 0 0 1 9 4.5ZM18 1.5a.75.75 0 0 1 .728.568l.258 1.036c.236.94.97 1.674 1.91 1.91l1.036.258a.75.75 0 0 1 0 1.456l-1.036.258c-.94.236-1.674.97-1.91 1.91l-.258 1.036a.75.75 0 0 1-1.456 0l-.258-1.036a2.625 2.625 0 0 0-1.91-1.91l-1.036-.258a.75.75 0 0 1 0-1.456l1.036-.258a2.625 2.625 0 0 0 1.91-1.91l.258-1.036A.75.75 0 0 1 18 1.5ZM16.5 15a.75.75 0 0 1 .712.513l.394 1.183c.15.447.5.799.948.948l1.183.395a.75.75 0 0 1 0 1.422l-1.183.395c-.447.15-.799.5-.948.948l-.395 1.183a.75.75 0 0 1-1.422 0l-.395-1.183a1.5 1.5 0 0 0-.948-.948l-1.183-.395a.75.75 0 0 1 0-1.422l1.183-.395c.447-.15.799-.5.948-.948l.395-1.183A.75.75 0 0 1 16.5 15Z" clipRule="evenodd" />
+    </svg>
+  
+  )
+}
+
+

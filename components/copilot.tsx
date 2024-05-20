@@ -8,7 +8,7 @@ import { Button } from './ui/button'
 import { Card } from './ui/card'
 import { ArrowRight, Check, FastForward, Sparkles } from 'lucide-react'
 import { useActions, useStreamableValue, useUIState } from 'ai/rsc'
-import type { AI } from '@/app/actions'
+import { AI } from '@/app/action'
 import { IconLogo } from './ui/icons'
 import { cn } from '@/lib/utils'
 
@@ -25,8 +25,8 @@ export const Copilot: React.FC<CopilotProps> = ({ inquiry }: CopilotProps) => {
     [key: string]: boolean
   }>({})
   const [isButtonDisabled, setIsButtonDisabled] = useState(true)
-  const [, setMessages] = useUIState<typeof AI>()
-  const { submit } = useActions()
+  const [messages, setMessages] = useUIState<typeof AI>()
+  const { submit } = useActions<typeof AI>()
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value)
@@ -73,8 +73,8 @@ export const Copilot: React.FC<CopilotProps> = ({ inquiry }: CopilotProps) => {
       ? undefined
       : new FormData(e.target as HTMLFormElement)
 
-    const response = await submit(formData, skip)
-    setMessages(currentMessages => [...currentMessages, response])
+    const responseMessage = await submit(formData, skip)
+    setMessages(currentMessages => [...currentMessages, responseMessage])
   }
 
   const handleSkip = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -112,7 +112,7 @@ export const Copilot: React.FC<CopilotProps> = ({ inquiry }: CopilotProps) => {
     )
   } else {
     return (
-      <Card className="p-4 rounded-lg w-full mx-auto">
+      <Card className="p-6 rounded-lg w-full mx-auto shadow-xl">
         <div className="flex items-center mb-4">
           <IconLogo
             className={cn('w-4 h-4 flex-shrink-0', { 'animate-spin': pending })}
@@ -170,7 +170,7 @@ export const Copilot: React.FC<CopilotProps> = ({ inquiry }: CopilotProps) => {
               <FastForward size={16} className="mr-1" />
               Skip
             </Button>
-            <Button type="submit" disabled={isButtonDisabled || pending}>
+            <Button type="submit" disabled={isButtonDisabled || pending} className="rounded-full">
               <ArrowRight size={16} className="mr-1" />
               Send
             </Button>
