@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { AI } from './actions';
+import { AI } from './action';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
